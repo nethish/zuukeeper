@@ -28,6 +28,7 @@ if zk.state != KazooState.CONNECTED:
     logging.info("Can't connect to Zookeeper: " + str(zk.state))
     exit(0)
 
+# If the path doesn't exist, it creates it.
 zk.ensure_path(PATH)
 
 def get_dynamic_data():
@@ -36,12 +37,15 @@ def get_dynamic_data():
             }
     return data
 
+# Add a watch for the path. This will be called whenever there 
+# is a change in the node.
 @zk.DataWatch(PATH)
 def watch(data, stat):
     logging.info('State changed: ' + data.decode('utf-8'))
     logging.info('Version: ' + str(stat.version))
 
 def generate_data():
+    # Press CTRL-C to abort
     while True:
         data = get_dynamic_data()
         zk.set(PATH, json.dumps(data).encode('utf-8'))
